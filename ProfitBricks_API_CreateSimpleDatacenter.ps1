@@ -37,7 +37,7 @@ $pb_creds = New-Object System.Management.Automation.PsCredential($_user,$_passwo
 $pb_api.Credentials = $pb_creds
 
 ################
-# initialisation done. $pb_api an object crated regarding WSDL
+# initialisation done. $pb_api is a instance crated regarding WSDL
 # try $pb_api | gm ...
 ################
 
