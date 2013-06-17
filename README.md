@@ -2,6 +2,8 @@
 
 Sample Power Shell Scripts for ProfitBricks API
 
+Code is for demonstration purpose only.
+
 ## LICENSE:
 
 (The MIT License)
