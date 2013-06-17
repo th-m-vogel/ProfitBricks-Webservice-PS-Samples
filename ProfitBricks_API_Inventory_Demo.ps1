@@ -37,10 +37,7 @@ $_user = "thomas.vogel@profitbricks.com"
 $pb_creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
 # end import password from file 
 
-## common - add credidentials for api access
-$pb_api.Credentials = $pb_creds
-
-## common - add credidentials for api access
+## add the credidentials for api access (common)
 $pb_api.Credentials = $pb_creds
 
 ################
