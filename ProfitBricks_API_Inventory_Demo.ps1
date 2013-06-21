@@ -24,7 +24,7 @@ $pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
 $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitBricks -class pbApiClass
 
 ## use this line for interactive request of user credidentials
-# $pb_creds = Get-Credential -Message "ProfitBricks Account"
+$pb_creds = Get-Credential -Message "ProfitBricks Account"
 
 ## use the following thre code lines for
 # file stored credidentials. (password as encrypted String)
@@ -90,8 +90,9 @@ foreach ($Datacenter in $DatacenterList){
 }
 Write-Host "done ..."
 
-
-#DCid	DCname ID	Type	Name	Status	Cores	Ram	Size	Connected LastModified
+################
+# Properties to request
+# DCid	DCname ID	Type	Name	Status	Cores	Ram	Nic0_MAC Nic0_promary_IP Size	Connected_To Created LastModified
 ################
 # get datacenter inventory Option 1
 ################
@@ -112,8 +113,15 @@ foreach ($Datacenter in $DatacenterList){
             $properties | Add-Member -Type NoteProperty -Name Status -Value $Server.virtualMachineState
             $properties | Add-Member -Type NoteProperty -Name Cores -Value $Server.cores
             $properties | Add-Member -Type NoteProperty -Name Ram -Value $Server.ram
+            $properties | Add-Member -Type NoteProperty -Name Nic0_MAC -Value $Server.Nics[0].macAddress
+            if ( $Server.Nics[0].ips.Count -gt 0 ) {
+                $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value $Server.Nics[0].ips[0]
+            } else {
+                $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value ""
+            }    
             $properties | Add-Member -Type NoteProperty -Name Size -Value ""
-            $properties | Add-Member -Type NoteProperty -Name Connected -Value ""
+            $properties | Add-Member -Type NoteProperty -Name Connected_To -Value ""
+            $properties | Add-Member -Type NoteProperty -Name Created -Value $Server.creationTime
             $properties | Add-Member -Type NoteProperty -Name LastModified -Value $Server.lastModificationTime
         $DC_Items += $properties
     }
@@ -128,6 +136,7 @@ foreach ($Datacenter in $DatacenterList){
             $properties | Add-Member -Type NoteProperty -Name Status -Value $Storage.provisioningState
             $properties | Add-Member -Type NoteProperty -Name Size -Value $Storage.size
             $properties | Add-Member -Type NoteProperty -Name Connected -Value $Storage.serverIds[0]
+            $properties | Add-Member -Type NoteProperty -Name Created -Value $Storage.creationTime
             $properties | Add-Member -Type NoteProperty -Name LastModified -Value $Storage.lastModificationTime
         $DC_Items += $properties
     }
