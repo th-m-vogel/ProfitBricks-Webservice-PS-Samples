@@ -1,20 +1,19 @@
 ﻿########################################################################
-# THIS SOFTWARE IS PROVIDED “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES,
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-# AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-# EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS
+# OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
 ########################################################################
 # Consume ProfitBricks SOAP-Api using Powershell
 # This is for demonstration purpose only
 #
 # This example does not include any error or exeption handling
-########################################################################
+#
+# Code Repository: https://github.com/th-m-vogel/ProfitBricks-Webservice-PS-Samples
+#########################################################################
 # (c) ProfitBricks, 2013, Autor: Thomas Vogel
 ########################################################################
 
@@ -32,9 +31,9 @@ $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitBricks -class pbApi
 # to create stored Credidentials you may use
 #   https://github.com/th-m-vogel/ProfitBricks-Webservice-PS-Samples/blob/master/Save-Password-as-encrypted-string.ps1
 ##
-$_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString 
-$_user = "thomas.vogel@profitbricks.com"
-$pb_creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
+# $_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString 
+# $_user = "username@domain.top"
+# $pb_creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
 # end import password from file 
 
 ## add the credidentials for api access (common)
