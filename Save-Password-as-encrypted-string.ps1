@@ -10,7 +10,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
-# Stor credidentials.password to encrypted string
+# Stor credentials.password to encrypted string
 # only the same user is able to use the encrypted string
 # if the script has to run on a differemt account, 
 # ConverFrom-SecureString and ConvertTo-SecureStrimg
@@ -24,10 +24,10 @@
 # (c) ProfitBricks, 2013, Autor: Thomas Vogel
 ########################################################################
 
-## request credidentials
-$creds = Get-Credential -Message "Enter Credidentials"
+## request credentials
+$creds = Get-Credential -Message "Enter credentials"
 
-## save credidentials.password as encrypted secure string
+## save credentials.password as encrypted secure string
 $creds.Password | ConvertFrom-SecureString | Set-Content "$env:HOMEPATH\PB_API.pwd"
 
 ## done ...

@@ -23,12 +23,12 @@ $pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
 ## connect the WDSL
 $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitBricks -class pbApiClass
 
-## use this line for interactive request of user credidentials
+## use this line for interactive request of user credentials
 $pb_creds = Get-Credential -Message "ProfitBricks Account"
 
 ## use the following thre code lines for
-# file stored credidentials. (password as encrypted String)
-# to create stored Credidentials you may use
+# file stored credentials. (password as encrypted String)
+# to create stored credentials you may use
 #   https://github.com/th-m-vogel/ProfitBricks-Webservice-PS-Samples/blob/master/Save-Password-as-encrypted-string.ps1
 ##
 # $_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString 
@@ -36,7 +36,7 @@ $pb_creds = Get-Credential -Message "ProfitBricks Account"
 # $pb_creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
 # end import password from file 
 
-## add the credidentials for api access (common)
+## add the credentials for api access (common)
 $pb_api.Credentials = $pb_creds
 
 ################
