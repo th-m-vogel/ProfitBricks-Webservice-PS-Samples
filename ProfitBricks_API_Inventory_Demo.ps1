@@ -72,7 +72,7 @@ foreach ($IpBlock in $IpBlockList){
 
 
 ################
-# get datacenter inventory Option 1
+# get datacenter inventory - Option 1
 ################
 Write-Host "Enumerate Datacenter Inventory for export as CSV and XML ..."
 foreach ($Datacenter in $DatacenterList){
@@ -94,7 +94,7 @@ Write-Host "done ..."
 # Properties to request
 # DCid	DCname ID	Type	Name	Status	Cores	Ram	Nic0_MAC Nic0_promary_IP Size	Connected_To Created LastModified
 ################
-# get datacenter inventory Option 1
+# get datacenter inventory - Option 2
 ################
 Write-Host "Enumerate Datacenter Inventory for export as single, customized CSV ..."
 $DC_Items = @()
@@ -135,7 +135,7 @@ foreach ($Datacenter in $DatacenterList){
             $properties | Add-Member -Type NoteProperty -Name Name -Value $Storage.StorageName
             $properties | Add-Member -Type NoteProperty -Name Status -Value $Storage.provisioningState
             $properties | Add-Member -Type NoteProperty -Name Size -Value $Storage.size
-            $properties | Add-Member -Type NoteProperty -Name Connected -Value $Storage.serverIds[0]
+            $properties | Add-Member -Type NoteProperty -Name Connected_To -Value $Storage.serverIds[0]
             $properties | Add-Member -Type NoteProperty -Name Created -Value $Storage.creationTime
             $properties | Add-Member -Type NoteProperty -Name LastModified -Value $Storage.lastModificationTime
         $DC_Items += $properties
