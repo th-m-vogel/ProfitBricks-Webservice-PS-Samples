@@ -69,7 +69,7 @@ $my_region = "EUROPE"
 ## get list of all availible Images
 $pb_images = $pb_api.getAllImages()
 ## Pick the Windows Server 2012 imag
-$image = $pb_images | Where-Object {($_.ImageName -eq "windows-2012-server-4.13.img") -and ($_.region -eq $my_region)}
+$image = $pb_images | Where-Object {($_.ImageName -like "windows-2012-server-*") -and ($_.region -eq $my_region)}
 write-host "Will use the followinmg Image to create a new Server:" $image.imageName
 
 ################
