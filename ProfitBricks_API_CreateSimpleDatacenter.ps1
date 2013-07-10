@@ -21,7 +21,7 @@
 $pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
 
 ## connect the WDSL
-$pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitBricks -class pbApiClass
+$pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitbricksApiService -class ProfitbricksApiServiceClass
 
 ## use this line for interactive request of user credentials
 $pb_creds = Get-Credential -Message "ProfitBricks Account"
@@ -81,7 +81,7 @@ Write-host "Create the new Datacenter ..."
 $DatacenterResponse = $pb_api.createDataCenter("My New API created Datacenter",$my_region,$true)
 
 ## create a StorageRequest
-$StorageRequest = New-Object ProfitBricks.createStorageRequest
+$StorageRequest = New-Object ProfitbricksApiService.createStorageRequest
 $StorageRequest.dataCenterId = $DatacenterResponse.dataCenterId
 $StorageRequest.storageName = "WindowsServer Drive C"
 $StorageRequest.size = 40
@@ -92,7 +92,7 @@ Write-Host "Create the Storage Device ..."
 $StorageResponse = $pb_api.createStorage($StorageRequest)
 
 ## create a ServerRequest
-$ServerRequest = New-Object ProfitBricks.createServerRequest
+$ServerRequest = New-Object ProfitbricksApiService.createServerRequest
 $ServerRequest.dataCenterId = $DatacenterResponse.dataCenterId
 $ServerRequest.cores = 2
 $ServerRequest.ram = 4096

@@ -21,7 +21,7 @@
 $pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
 
 ## connect the WDSL
-$pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitBricks -class pbApiClass
+$pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitbricksApiService -class ProfitbricksApiServiceClass
 
 ## use this line for interactive request of user credentials
 $pb_creds = Get-Credential -Message "ProfitBricks Account"
