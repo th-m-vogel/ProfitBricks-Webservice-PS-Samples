@@ -38,7 +38,7 @@ $pb_creds = Get-Credential -Message "ProfitBricks Account"
 
 ## add the credentials for api access (common)
 $pb_api.Credentials = $pb_creds
-
+$pb_api.Url = "https://api.profitbricks.com/1.2/"
 ################
 # initialisation done. $pb_api is a instance crated regarding WSDL
 # try $pb_api | gm ...
@@ -103,7 +103,7 @@ $ServerRequest.internetAccess = $true
 Write-host "Create the new Server using the newly created Storage as boot device ..."
 $ServerResponse = $pb_api.createServer($ServerRequest)
 
-## and  check provisioning state
+## and  check provisioning state until Datacenter is provisioned
 CheckProvisioningState($DatacenterResponse.dataCenterId)
 
 ## Set the Name for the newly create network card (cosmetics ...)
