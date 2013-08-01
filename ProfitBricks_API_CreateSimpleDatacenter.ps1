@@ -46,14 +46,11 @@ $pb_api.Url = "https://api.profitbricks.com/1.2/"
 ## create a function to wait for a ready to use datacenter
 function CheckProvisioningState { 
     param ($_DataCenterID)
-    write-host -NoNewline "Wait for Datacenter to change status to availible ..."
+    write-host -NoNewline "Wait for to change status to available, check every 10 seconds  ..."
     do {
+        write-host -NoNewline "." 
+        start-sleep -s 10
         $_DC = $pb_api.getDataCenter($_DataCenterID)
-        if ($_DC.provisioningStateSpecified -and ($_DC.provisioningState -ne "AVAILABLE")) {
-            write-host -NoNewline "." 
-            start-sleep -s 1
-            $_DC = $pb_api.getDataCenter($_DataCenterID)
-        } 
     } while ($_DC.provisioningStateSpecified -and ($_DC.provisioningState -ne "AVAILABLE"))
     Write-Host " done ..."
 }
@@ -65,7 +62,7 @@ function CheckProvisioningState {
 ## Specify Region to use
 $my_region = "EUROPE"
 
-## get list of all availible Images
+## get list of all available Images
 $pb_images = $pb_api.getAllImages()
 ## Pick the Windows Server 2012 imag
 $image = $pb_images | Where-Object {($_.ImageName -like "windows-2012-server-*") -and ($_.region -eq $my_region)}
