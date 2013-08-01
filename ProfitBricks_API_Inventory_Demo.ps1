@@ -55,6 +55,13 @@ $ImageList = $pb_api.getAllImages()
 # Export Imagelist to CSV
 $ImageList | Export-Csv -Path "$env:HOMEPATH\DatacenterInventar\Imagelist.csv" -Delimiter ";" -NoTypeInformation
 
+################
+# get List of all Snapshots availble inside yor account
+################
+Write-Host "Read SnapshotList from PB-API ..."
+$SnapshotList = $pb_api.getAllSnapshots()
+# Export Imagelist to CSV
+$SnapshotList | Export-Csv -Path "$env:HOMEPATH\DatacenterInventar\SnapshotList.csv" -Delimiter ";" -NoTypeInformation
 
 ################
 # get list of reserved IP Blocks
@@ -91,9 +98,6 @@ foreach ($Datacenter in $DatacenterList){
 Write-Host "done ..."
 
 ################
-# Properties to request
-# DCid	DCname ID	Type	Name	Status	Cores	Ram	Nic0_MAC Nic0_promary_IP Size	Connected_To Created LastModified
-################
 # get datacenter inventory - Option 2
 ################
 Write-Host "Enumerate Datacenter Inventory for export as single, customized CSV ..."
@@ -118,7 +122,10 @@ foreach ($Datacenter in $DatacenterList){
                 $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value $Server.Nics[0].ips[0]
             } else {
                 $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value ""
-            }    
+            }  
+            if ( $Server.Nics[0].dhcpActive -eq $false ) {
+                $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value "dhcp_off"
+            }  
             $properties | Add-Member -Type NoteProperty -Name Size -Value ""
             $properties | Add-Member -Type NoteProperty -Name Connected_To -Value ""
             $properties | Add-Member -Type NoteProperty -Name Created -Value $Server.creationTime
