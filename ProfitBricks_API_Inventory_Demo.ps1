@@ -1,4 +1,5 @@
-﻿########################################################################
+﻿
+########################################################################
 # Copyright 2013 Thomas Vogel
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -101,11 +102,15 @@ Write-Host "done ..."
 # get datacenter inventory - Option 2
 ################
 Write-Host "Enumerate Datacenter Inventory for export as single, customized CSV ..."
+# The array DC_Items will hold the informations exported to CSV later on
 $DC_Items = @()
 foreach ($Datacenter in $DatacenterList){
     $_Datacenter = $pb_api.getDataCenter($Datacenter.dataCenterId)
     Write-Host " ... working datacenter:" $_Datacenter.dataCenterName "using Datacenter ID:" $_Datacenter.dataCenterId
     # Export Servers
+    #
+    # for each server only selected properties are assigned to the properties Object
+    # each set of properties is added to the DC_Items aray
     foreach ($Server in $_Datacenter.servers){
         $properties = $null
         $properties = New-Object System.Object
@@ -118,11 +123,13 @@ foreach ($Datacenter in $DatacenterList){
             $properties | Add-Member -Type NoteProperty -Name Cores -Value $Server.cores
             $properties | Add-Member -Type NoteProperty -Name Ram -Value $Server.ram
             $properties | Add-Member -Type NoteProperty -Name Nic0_MAC -Value $Server.Nics[0].macAddress
+            # if 1st NIC does have a assigned IP, note the 1st assigned IP
             if ( $Server.Nics[0].ips.Count -gt 0 ) {
                 $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value $Server.Nics[0].ips[0]
             } else {
                 $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value ""
-            }  
+            }
+            # if DHCP is disabled for 1st NIC, note this to the Nic0_primary_IP property 
             if ( $Server.Nics[0].dhcpActive -eq $false ) {
                 $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value "dhcp_off"
             }  
@@ -132,6 +139,9 @@ foreach ($Datacenter in $DatacenterList){
             $properties | Add-Member -Type NoteProperty -Name LastModified -Value $Server.lastModificationTime
         $DC_Items += $properties
     }
+    # Export Storage
+    #
+    # same way as allready done for the servers
     foreach ($Storage in $_Datacenter.storages){
         $properties = $null
         $properties = New-Object System.Object
@@ -148,5 +158,8 @@ foreach ($Datacenter in $DatacenterList){
         $DC_Items += $properties
     }
 }
+# Export the DC_Items Array to CSV File. 
+# For systems running locale EN, please remove the -Delimiter option
+# For Systems running different local than DE a different delimiter for CSV export may apply
 $DC_Items | Export-Csv -Path "$env:HOMEPATH\DatacenterInventar\DatacenterInventory_Short.csv" -Delimiter ";" -NoTypeInformation
 Write-Host "done ..."
