@@ -94,18 +94,33 @@ $ServerRequest.dataCenterId = $DatacenterResponse.dataCenterId
 $ServerRequest.cores = 2
 $ServerRequest.ram = 4096
 $ServerRequest.serverName = "Windows2012 Server"
-$ServerRequest.bootFromStorageId = $StorageResponse.storageId
-$ServerRequest.internetAccess = $true
 ## invoke the createServer methode
 Write-host "Create the new Server using the newly created Storage as boot device ..."
 $ServerResponse = $pb_api.createServer($ServerRequest)
+
+## Connect Storage to Server
+$ConnectRequest = New-Object ProfitbricksApiService.connectStorageRequest
+$ConnectRequest.serverId = $ServerResponse.serverId
+$ConnectRequest.storageId = $StorageResponse.storageId
+## invoke the connectStorageToServer methode
+$ConnectResponse = $pb_api.connectStorageToServer($ConnectRequest)
+
+## Create NIC
+$NicRequest = New-Object ProfitbricksApiService.createNicRequest
+$NicRequest.serverId = $ServerResponse.serverId
+$NicRequest.lanId = 1
+$NicRequest.nicName = "Nic01"
+## invoke the createNic methode
+$NicResponse = $pb_api.createNic($NicRequest)
+
+## Connect the Lan to the Internet
+$InternetResponse = $pb_api.SetInternetAccess($DatacenterResponse.dataCenterId,1,$true,$true)
+
 
 ## and  check provisioning state until Datacenter is provisioned
 CheckProvisioningState($DatacenterResponse.dataCenterId)
 
 ## Set the Name for the newly create network card (cosmetics ...)
-Write-host "Set a name to the newly created Nic ..."
-$NicResponse = $pb_api.updateNic(@{nicId=$pb_api.getServer($ServerResponse.ServerID).nics[0].nicId;nicName="Lan0"})
 Write-host "Primary IP is: "$pb_api.getServer($ServerResponse.ServerID).nics[0].Ips[0]
 
 ## Datacenter is ready
