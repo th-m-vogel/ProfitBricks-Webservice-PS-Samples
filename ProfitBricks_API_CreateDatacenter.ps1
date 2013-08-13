@@ -95,7 +95,7 @@ $ServerRequest.cores = 2
 $ServerRequest.ram = 4096
 $ServerRequest.serverName = "Windows2012 Server"
 ## invoke the createServer methode
-Write-host "Create the new Server using the newly created Storage as boot device ..."
+Write-host "Create the new Server ..."
 $ServerResponse = $pb_api.createServer($ServerRequest)
 
 ## Connect Storage to Server
@@ -103,6 +103,7 @@ $ConnectRequest = New-Object ProfitbricksApiService.connectStorageRequest
 $ConnectRequest.serverId = $ServerResponse.serverId
 $ConnectRequest.storageId = $StorageResponse.storageId
 ## invoke the connectStorageToServer methode
+Write-host "Connect Storage to Server ..."
 $ConnectResponse = $pb_api.connectStorageToServer($ConnectRequest)
 
 ## Create NIC
@@ -111,11 +112,12 @@ $NicRequest.serverId = $ServerResponse.serverId
 $NicRequest.lanId = 1
 $NicRequest.nicName = "Nic01"
 ## invoke the createNic methode
+Write-host "Create the new Nic ..."
 $NicResponse = $pb_api.createNic($NicRequest)
 
 ## Connect the Lan to the Internet
+Write-host "Connect the Lan to the Internet ..."
 $InternetResponse = $pb_api.SetInternetAccess($DatacenterResponse.dataCenterId,1,$true,$true)
-
 
 ## and  check provisioning state until Datacenter is provisioned
 CheckProvisioningState($DatacenterResponse.dataCenterId)
