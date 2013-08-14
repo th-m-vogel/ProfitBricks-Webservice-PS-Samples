@@ -94,7 +94,12 @@ $ServerRequest.dataCenterId = $DatacenterResponse.dataCenterId
 $ServerRequest.cores = 2
 $ServerRequest.ram = 4096
 $ServerRequest.serverName = "Windows2012 Server"
+## include connectStorage
 $ServerRequest.bootFromStorageId = $StorageResponse.storageId
+## include createNic
+$ServerRequest.lanId = 1
+$ServerRequest.lanIdSpecified = $true
+## include setInternetAccess
 $ServerRequest.internetAccess = $true
 ## invoke the createServer methode
 Write-host "Create the new Server using the newly created Storage as boot device ..."

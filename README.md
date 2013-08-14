@@ -1,6 +1,17 @@
 ## DESCRIPTION:
 
-Sample Power Shell Scripts for ProfitBricks API
+This is a collection of several, may be usefull, PowerShell scritps to use the ProfitBricks Cloud API. For detailed informations about this please take a look to the ProfitBricks Blog at [http://blog.profitbricks.de/](http://blog.profitbricks.de/)
+
+## PowerShell Scripts provided
+
+Save-Password-as-encrypted-string.ps1 - Handling of encrypted credentials using PScredentials
+
+ProfitBricks_API_Inventory_Demo.ps1 - Get asset informations about you ProfitBricks cloud ressources using soap api. See als blog post [Part 1 - Inventory](http://blog.profitbricks.de/benutzung-der-profitbricks-api-mit-power-shell-teil-1-basics-und-inventarisierung/) - german only.
+
+ProfitBricks_API_Create[Simple]Datacenter.ps1 - provision new ressources in you ProfitBricks cloud. Blog post not jyet published.
+ 
+
+## Remarks
 
 Code is for demonstration purpose only.
 
