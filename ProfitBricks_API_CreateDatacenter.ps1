@@ -47,7 +47,7 @@ $pb_api.Credentials = $pb_creds
 ##
 function CheckProvisioningState { 
     param ($_DataCenterID)
-    write-host -NoNewline "Wait for Datacenter to change status to available, check every 10 seconds  ..."
+    write-host -NoNewline "Wait for Datacenter to change status to available, check every 10 seconds "
     do {
         write-host -NoNewline "." 
         start-sleep -s 10
