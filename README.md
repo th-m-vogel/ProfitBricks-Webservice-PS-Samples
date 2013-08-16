@@ -8,7 +8,9 @@ Save-Password-as-encrypted-string.ps1 - Handling of encrypted credentials using 
 
 ProfitBricks_API_Inventory_Demo.ps1 - Get asset informations about you ProfitBricks cloud ressources using soap api. See als blog post [Part 1 - Inventory](http://blog.profitbricks.de/benutzung-der-profitbricks-api-mit-power-shell-teil-1-basics-und-inventarisierung/) - german only.
 
-ProfitBricks_API_Create[Simple]Datacenter.ps1 - provision new ressources in you ProfitBricks cloud. Blog post not published - upcomming.
+ProfitBricks_API_Create[Simple]Datacenter.ps1 - provision new ressources in you ProfitBricks cloud. See also Blog post [Part 2 - Provisioning](http://blog.profitbricks.de/benutzung-der-profitbricks-api-mit-power-shell-teil-2-provisionieren-von-ressourcen/) - german only.
+
+ProfitBricks_API_CloneDatacenter.ps1 - Clone existing Datacenter using snapshots. 
  
 
 ## Remarks
