@@ -2,6 +2,10 @@
 
 This is a collection of several, may be usefull, PowerShell scritps to use the ProfitBricks Cloud API. For detailed informations about this please take a look to the ProfitBricks Blog at [http://blog.profitbricks.de/](http://blog.profitbricks.de/)
 
+## Requirements
+
+PowerShell V3. To install PowerShell V3 on Windows Server 2008{R2] / Windows [Vista,7] install .NET Framework 4.0  Full and Windows Management Framework 3.0
+
 ## PowerShell Scripts provided
 
 Save-Password-as-encrypted-string.ps1 - Handling of encrypted credentials using PScredentials
