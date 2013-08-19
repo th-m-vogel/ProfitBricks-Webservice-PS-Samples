@@ -84,6 +84,7 @@ $srcDC = Get-PBDatacenter $srcDCid.dataCenterId
 # create Snapshots from source datacenter
 ################
 $SnapshotTable = @{}
+$StoredSnaphosts = $null
 $StoredSnaphosts = Get-PBSnapshots
 foreach ($storage in $srcDC.storages) {
     Write-Host -NoNewline "Evaluate" $storage.storageName 
@@ -107,7 +108,7 @@ foreach ($storage in $srcDC.storages) {
         $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
     }
 }
-sleep 90
+# sleep 90
 
 ################
 # wait for for snapshots to finish
@@ -118,7 +119,7 @@ do {
     Sleep 60
     Write-Host -NoNewline "."
 } while (Get-PBSnapshots | Where-Object {($_.provisioningState -ne "AVAILABLE") -and ($_.SnapshotId -in $SnapshotTable.Values )})
-Write-Host " finished!"
+Write-Host " done!"
 
 ################
 # create the new Datacenter
@@ -139,6 +140,7 @@ foreach ($Storage in $srcDC.storages) {
     $StorageTable += @{$storage.storageId = $NewStorage.storageId}
 }
 
+
 ################
 # wait for provisioning finished
 ################
@@ -147,23 +149,61 @@ CheckProvisioningState $newDC.dataCenterId 60
 ################
 # Create the Servers
 ################
-$internet = @{}
+$InternetTable = @{}
+$ServerTable = @{}
 foreach ($server in $srcDC.servers) {
     Write-Host "Create Server" $server.serverName "using" $server.cores  "cores and" ($server.ram/1024) "GB RAM"
     $NewServer = New-PBServer -dataCenterId $newDC.dataCenterId -serverName $server.serverName -cores $server.cores -ram $server.ram -availabilityZone $server.availabilityZone -osType $server.osType
+    $ServerTable += @{$server.serverId = $NewServer.serverId}
     Write-Host "    Add nics to the server"
     foreach ($nic in $server.nics) {
         $newNic = New-PBNic -serverId $NewServer.serverId -nicName $nic.nicName -dhcpActive $nic.dhcpActive -lanId $nic.lanId
-        if ($nic.internetAccess -and !$internet.item($nic.lanid)) {
+        if ($nic.internetAccess -and !$InternetTable.item($nic.lanid)) {
             $setInternet = Set-PBInternetAccess -datacenterId $newDC.dataCenterId -lanId $nic.lanId -internetAccess $true
-            $internet += @{$nic.lanid = $true}
+            $InternetTable += @{$nic.lanid = $true}
         }
+    }
+    Write-Host "    Connect CD-ROM to the server"
+    foreach ($cdrom in $Server.romdrives) {
+        if ($cdrom.bootDevice) {
+            Write-Host "        Set Bootdevice to CD-Rom Image" $cdrom.imageId
+            $storageconnect = Set-PBServer -serverId $NewServer.serverId -bootFromImageId $cdrom.imageId
+        } else {
+            Write-Host "        Connect data CD-ROM Image" $cdrom.imageId
+            $storageconnect = Mount-PBRomdrive -serverId $NewServer.serverId -imageId $cdrom.imageId 
+        }
+
     }
     Write-Host "    Connect storages to the server"
     foreach ($storage in $server.connectedStorages) {
-        $storageconnect = Connect-PBStorageToServer -serverId $NewServer.serverId -storageId $StorageTable.item($storage.storageId) -busType $storage.busType
+        if ($storage.bootDevice) {
+            Write-Host "        Set Bootdevice to" $StorageTable.item($storage.storageId)
+            $storageconnect = Set-PBServer -serverId $NewServer.serverId -bootFromStorageId $StorageTable.item($storage.storageId)
+        } else {
+            Write-Host "        Connect data storage" $StorageTable.item($storage.storageId)
+            $storageconnect = Connect-PBStorageToServer -serverId $NewServer.serverId -storageId $StorageTable.item($storage.storageId) -busType $storage.busType
+        }
     }
 }
+
+################
+# Create the Loadbalancers
+################
+#foreach ($loadbalancer in $srcDC.loadBalancers ) {
+#    Write-Host "Create Loadbalancer" $loadbalancer.loadBalancerName "on Network" $loadbalancer.lanId
+#    $NewLoadbalancer = New-PBLoadBalancer -dataCenterId $newDC.dataCenterId -loadBalancerName $loadbalancer.loadBalancerName -lanId $loadbalancer.lanId
+#    foreach ($server in $loadbalancer.balancedServers) {
+#        Write-Host "    Register" $ServerTable.item($server.serverId) "as balanced Server"
+#        $RegisterServer = Register-PBServerToLoadBalancer -loadBalancerId $NewLoadbalancer.loadBalancerId -serverIds $ServerTable.item($server.serverId)
+#    }
+#    $balancedserver = @()
+#    foreach ($server in $loadbalancer.balancedServers) {
+#        $balancedserver += $ServerTable.item($server.serverId) 
+#    }
+#    Write-Host "Create Loadbalancer" $loadbalancer.loadBalancerName "on Network" $loadbalancer.lanId "balancing" $balancedserver
+#    $NewLoadbalancer = New-PBLoadBalancer -dataCenterId $newDC.dataCenterId -loadBalancerName $loadbalancer.loadBalancerName -lanId $loadbalancer.lanId -serverIds $balancedserver
+#}
+
 
 ################
 # Thats all, wait for provisioning finished
