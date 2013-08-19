@@ -47,38 +47,72 @@ Open-PBApiService -Credentials $creds
 # configuration section
 ################
 
-$srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq "GehtdochOnPremise"}
-$targetDCname = "MY New Cloned Datacenter"
+$srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq "Master"}
+$targetDCname = "My New Master Copy"
+$UseExistingSnapshots = $true
 
 ################
 # end configuration section
 ################
 
-## gequest source DataCenter configuration
+################
+## create a function to wait for a ready to use datacenter
+################
+function CheckProvisioningState { 
+    param (
+        [Parameter( Mandatory=$true, Position=0 )]
+        [String]
+        $_DataCenterID
+        ,
+        [Parameter( Mandatory=$true, Position=1 )]
+        [Int]
+        $_Delay
+    )
+
+    write-host -NoNewline "Wait for Datacenter $_DataCenterID to change status to available, check every $_Delay seconds "
+    do {
+        start-sleep -s $_Delay
+        write-host -NoNewline "." 
+    } while ( (Get-PBDatacenterState $_DataCenterID) -ne "AVAILABLE" )
+    Write-Host " done!"
+}
+
+## request source DataCenter configuration
 $srcDC = Get-PBDatacenter $srcDCid.dataCenterId
 
 ################
 # create Snapshots from source datacenter
 ################
 $SnapshotTable = @{}
+$StoredSnaphosts = Get-PBSnapshots
 foreach ($storage in $srcDC.storages) {
-    Write-Host -NoNewline "Cloning" $storage.storageName 
-    if ( $storage.serverIds ){
-        Write-Host " mounted by Server" $storage.serverIds[0]
-        if ((Get-PBServer -serverId $storage.serverIds[0]).virtualMachineState -eq "RUNNING") {
-            Write-Host "## Warning: Server" $storage.serverIds "is running while Snapshot is created!"
-        }
+    Write-Host -NoNewline "Evaluate" $storage.storageName 
+
+
+    if ( $UseExistingSnapshots -and ($existing = $StoredSnaphosts | Where-Object {$_.snapshotname -eq $storage.storageId -and $_.region -eq $srcDC.region}) ) {
+        ## select newes snapshot - unsafe for now, now real timestamop in storageobject
+        $existing = ($existing | Sort-Object -Property description -Descending)[0]
+        Write-Host " ... Use existing Snapshot" $existing.description
+        $SnapshotTable += @{$storage.storageId = $existing.snapshotId }
     } else {
-        Write-Host " not mounted by any Server"
+        if ( $storage.serverIds ){
+            Write-Host " mounted by Server" $storage.serverIds[0]
+            if ((Get-PBServer -serverId $storage.serverIds[0]).virtualMachineState -eq "RUNNING") {
+                Write-Host "## Warning: Server" $storage.serverIds "is running while Snapshot is created!"
+            }
+        } else {
+            Write-Host " not mounted by any Server"
+        }
+        $Snapshot = New-PBSnapshot -storageId $storage.storageId -snapshotName $storage.storageId -description ("Auto created cloning snapshot from " + $storage.storageName + " at " + (Get-Date).ToString())
+        $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
     }
-    $Snapshot = New-PBSnapshot -storageId $storage.storageId -snapshotName $storage.storageId -description ("Auto created cloning snapshot from " + $storage.storageName + " at " + (Get-Date).ToString())
-    $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
 }
+sleep 90
 
 ################
 # wait for for snapshots to finish
 ################
-
+ 
 Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds "
 do {
     Sleep 60
@@ -106,6 +140,11 @@ foreach ($Storage in $srcDC.storages) {
 }
 
 ################
+# wait for provisioning finished
+################
+CheckProvisioningState $newDC.dataCenterId 60
+
+################
 # Create the Servers
 ################
 $internet = @{}
@@ -127,18 +166,12 @@ foreach ($server in $srcDC.servers) {
 }
 
 ################
-# Thats all, wait für provisioning finished
+# Thats all, wait for provisioning finished
 ################
-Write-Host -NoNewline "Wait for Datacenter to be available, check every 60 seconds "
-do {
-    Sleep 60
-    Write-Host -NoNewline "."
-} while ( (Get-PBDatacenterState $newDC.dataCenterId) -ne "AVAILABLE" )
-
-Write-Host " Done !!!"
+CheckProvisioningState $newDC.dataCenterId 60
 
 ################
 # Cleanup Snapshots
 ################
-Write-Host "Cleaning up Snapshots"
-$null = Get-PBSnapshots | Remove-PBSnapshot 
+# Write-Host "Cleaning up Snapshots"
+# $null = Get-PBSnapshots | Remove-PBSnapshot 
