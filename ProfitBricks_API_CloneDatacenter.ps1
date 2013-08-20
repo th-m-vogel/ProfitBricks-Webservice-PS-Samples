@@ -37,6 +37,7 @@ import-module ProfitBricksSoapApi
 
 $_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString 
 $_user = "thomas.vogel@profitbricks.com"
+
 ## Crate a credidentioal Object
 $creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
 
@@ -48,8 +49,9 @@ Open-PBApiService -Credentials $creds
 ################
 
 $srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq "Master"}
-$targetDCname = "My New Master Copy"
+$targetDCname = "My New Master Copy Dienstag"
 $UseExistingSnapshots = $true
+$CleanuSnapshots = $false
 
 ################
 # end configuration section
@@ -108,7 +110,6 @@ foreach ($storage in $srcDC.storages) {
         $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
     }
 }
-# sleep 90
 
 ################
 # wait for for snapshots to finish
@@ -139,7 +140,6 @@ foreach ($Storage in $srcDC.storages) {
     $RestoreSnapshot = Restore-PBSnapshot -storageId $NewStorage.StorageId -snapshotId $SnapshotTable.Item($storage.storageId)
     $StorageTable += @{$storage.storageId = $NewStorage.storageId}
 }
-
 
 ################
 # wait for provisioning finished
@@ -189,20 +189,14 @@ foreach ($server in $srcDC.servers) {
 ################
 # Create the Loadbalancers
 ################
-#foreach ($loadbalancer in $srcDC.loadBalancers ) {
-#    Write-Host "Create Loadbalancer" $loadbalancer.loadBalancerName "on Network" $loadbalancer.lanId
-#    $NewLoadbalancer = New-PBLoadBalancer -dataCenterId $newDC.dataCenterId -loadBalancerName $loadbalancer.loadBalancerName -lanId $loadbalancer.lanId
-#    foreach ($server in $loadbalancer.balancedServers) {
-#        Write-Host "    Register" $ServerTable.item($server.serverId) "as balanced Server"
-#        $RegisterServer = Register-PBServerToLoadBalancer -loadBalancerId $NewLoadbalancer.loadBalancerId -serverIds $ServerTable.item($server.serverId)
-#    }
-#    $balancedserver = @()
-#    foreach ($server in $loadbalancer.balancedServers) {
-#        $balancedserver += $ServerTable.item($server.serverId) 
-#    }
-#    Write-Host "Create Loadbalancer" $loadbalancer.loadBalancerName "on Network" $loadbalancer.lanId "balancing" $balancedserver
-#    $NewLoadbalancer = New-PBLoadBalancer -dataCenterId $newDC.dataCenterId -loadBalancerName $loadbalancer.loadBalancerName -lanId $loadbalancer.lanId -serverIds $balancedserver
-#}
+foreach ($loadbalancer in $srcDC.loadBalancers ) {
+    $balancedserver = @()
+    foreach ($server in $loadbalancer.balancedServers) {
+        $balancedserver += $ServerTable.item($server.serverId) 
+    }
+    Write-Host "Create Loadbalancer" $loadbalancer.loadBalancerName "on Network" $loadbalancer.lanId "balancing" $balancedserver
+    $NewLoadbalancer = New-PBLoadBalancer -dataCenterId $newDC.dataCenterId -loadBalancerName $loadbalancer.loadBalancerName -lanId $loadbalancer.lanId -serverIds $balancedserver
+}
 
 
 ################
@@ -213,5 +207,8 @@ CheckProvisioningState $newDC.dataCenterId 60
 ################
 # Cleanup Snapshots
 ################
-# Write-Host "Cleaning up Snapshots"
-# $null = Get-PBSnapshots | Remove-PBSnapshot 
+if ($CleanuSnapshots) {
+    Write-Host -NoNewline "Cleaning up Snapshots ... "
+    $null = $SnapshotTable.Values | Remove-PBSnapshot 
+    Write-Host "done!"
+}
