@@ -14,7 +14,7 @@ ProfitBricks_API_Inventory_Demo.ps1 - Get asset informations about you ProfitBri
 
 ProfitBricks_API_Create[Simple]Datacenter.ps1 - provision new ressources in you ProfitBricks cloud. See also Blog post [Part 2 - Provisioning](http://blog.profitbricks.de/benutzung-der-profitbricks-api-mit-power-shell-teil-2-provisionieren-von-ressourcen/) - german only.
 
-ProfitBricks_API_CloneDatacenter.ps1 - Clone existing Datacenter using snapshots. 
+ProfitBricks_API_CloneDatacenter.ps1 - Clone existing Datacenter using snapshots. Work in progess and may result in Blog Post part 3 ...
  
 
 ## Remarks
