@@ -122,7 +122,7 @@ $InternetResponse = $pb_api.SetInternetAccess($DatacenterResponse.dataCenterId,1
 ## and  check provisioning state until Datacenter is provisioned
 CheckProvisioningState($DatacenterResponse.dataCenterId)
 
-## Set the Name for the newly create network card (cosmetics ...)
+## get the primary IP for the created NIC
 Write-host "Primary IP is: "$pb_api.getServer($ServerResponse.ServerID).nics[0].Ips[0]
 
 ## Datacenter is ready
