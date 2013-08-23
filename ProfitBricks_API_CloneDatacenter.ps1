@@ -22,7 +22,7 @@
 import-module ProfitBricksSoapApi
 
 ## use this line for interactive request of user credentials
-# $creds = Get-Credential -Message "ProfitBricks Account"
+$creds = Get-Credential -Message "ProfitBricks Account"
 
 
 ## use the following thre code lines for
@@ -32,14 +32,8 @@ import-module ProfitBricksSoapApi
 ##
 # $_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString 
 # $_user = "username@domain.top"
-# $pb_creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
+# $creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
 # end import password from file 
-
-$_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString 
-$_user = "thomas.vogel@profitbricks.com"
-
-## Crate a credidentioal Object
-$creds = New-Object System.Management.Automation.PsCredential($_user,$_password)
 
 ## initialise the PB-API Service using the given Credentials
 Open-PBApiService -Credentials $creds
@@ -85,31 +79,42 @@ $srcDC = Get-PBDatacenter $srcDCid.dataCenterId
 ################
 # create Snapshots from source datacenter
 ################
+# The Hash SnapshotTable will associate StorageID in 
+# SourceDatacenter and SnapshitID
 $SnapshotTable = @{}
+# Get List of existing Snapshots
 $StoredSnaphosts = $null
 $StoredSnaphosts = Get-PBSnapshots
+# loop for all storages in Datacenter
 foreach ($storage in $srcDC.storages) {
     Write-Host -NoNewline "Evaluate" $storage.storageName 
-
-
+    # Check if there is an existing snapshot we can use
     if ( $UseExistingSnapshots -and ($existing = $StoredSnaphosts | Where-Object {$_.snapshotname -eq $storage.storageId -and $_.region -eq $srcDC.region}) ) {
         ## select newes snapshot - unsafe for now, now real timestamop in storageobject
         $existing = ($existing | Sort-Object -Property description -Descending)[0]
         Write-Host " ... Use existing Snapshot" $existing.description
+        # Update SnapshotTable, associate existing Snapshot to StorageID
         $SnapshotTable += @{$storage.storageId = $existing.snapshotId }
     } else {
+        # is the storage connected to a Server ?
         if ( $storage.serverIds ){
             Write-Host " mounted by Server" $storage.serverIds[0]
+            # create warning if the connected server is running
             if ((Get-PBServer -serverId $storage.serverIds[0]).virtualMachineState -eq "RUNNING") {
                 Write-Host "## Warning: Server" $storage.serverIds "is running while Snapshot is created!"
             }
         } else {
-            Write-Host " not mounted by any Server"
+            Write-Host "    not mounted by any Server"
         }
+        Write-Host "    Request new Snapshot for Storage" $storage.storageName "using StorageID" $storage.storageId
+        # Create snapshot
         $Snapshot = New-PBSnapshot -storageId $storage.storageId -snapshotName $storage.storageId -description ("Auto created cloning snapshot from " + $storage.storageName + " at " + (Get-Date).ToString())
+        # update SnapshotTable, associate existing Snapshot to StorageID
         $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
     }
 }
+## Ensure Snapshoting is starte before testing the snapshot status
+sleep 90
 
 ################
 # wait for for snapshots to finish
