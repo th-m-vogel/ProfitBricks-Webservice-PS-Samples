@@ -43,7 +43,7 @@ Open-PBApiService -Credentials $creds
 ################
 
 $srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq "Master"}
-$targetDCname = "My New Master Copy Dienstag"
+$targetDCname = "My New Master Copy"
 $UseExistingSnapshots = $true
 $CleanuSnapshots = $false
 
@@ -80,7 +80,7 @@ $srcDC = Get-PBDatacenter $srcDCid.dataCenterId
 # create Snapshots from source datacenter
 ################
 # The Hash SnapshotTable will associate StorageID in 
-# SourceDatacenter and SnapshitID
+# SourceDatacenter and SnapshotID
 $SnapshotTable = @{}
 # Get List of existing Snapshots
 $StoredSnaphosts = $null
@@ -137,12 +137,18 @@ $newDC = New-PBDatacenter -dataCenterName $targetDCname -Region $srcDC.region
 ################
 # create the Storages
 ################
+# The Hash StorageTable will associate StorageID in 
+# SourceDatacenter and new created StorageID 
+# in TargetDatacenter
 $StorageTable = @{}
 foreach ($Storage in $srcDC.storages) {
     Write-Host -NoNewline "Create new Storage" $storage.storageName "size" $storage.size "GB ..."
+    # create the new Storage using properties from existing storage
     $NewStorage = New-PBStorage -dataCenterId $newDC.dataCenterId -size $storage.size -storageName $storage.storageName 
-    Write-Host "and apply snapshot from source storage" $storage.storageId
+    Write-Host " and apply snapshot from source storage" $storage.storageId
+    # Restore Snapshot. Use SnapshotTable to identify snapshot to use
     $RestoreSnapshot = Restore-PBSnapshot -storageId $NewStorage.StorageId -snapshotId $SnapshotTable.Item($storage.storageId)
+    # update SnapshotTable, associate existing StorageID to new StorageID
     $StorageTable += @{$storage.storageId = $NewStorage.storageId}
 }
 
@@ -154,39 +160,53 @@ CheckProvisioningState $newDC.dataCenterId 60
 ################
 # Create the Servers
 ################
+# The Hash InternetTable will associate LanID in 
+# SourceDatacenter and the Internet 
+# connection status for the lanID
 $InternetTable = @{}
+# The Hash ServerTable will associate ServerID in 
+# SourceDatacenter and new created ServerID 
+# in TargetDatacenter
 $ServerTable = @{}
 foreach ($server in $srcDC.servers) {
     Write-Host "Create Server" $server.serverName "using" $server.cores  "cores and" ($server.ram/1024) "GB RAM"
+    # create the new server using the properties from the srcDC
     $NewServer = New-PBServer -dataCenterId $newDC.dataCenterId -serverName $server.serverName -cores $server.cores -ram $server.ram -availabilityZone $server.availabilityZone -osType $server.osType
+    # update ServerTable, associate existing ServerID to new ServerID
     $ServerTable += @{$server.serverId = $NewServer.serverId}
     Write-Host "    Add nics to the server"
+    # Resore NICs
     foreach ($nic in $server.nics) {
         $newNic = New-PBNic -serverId $NewServer.serverId -nicName $nic.nicName -dhcpActive $nic.dhcpActive -lanId $nic.lanId
+        # Restore internet connection status for the LAN (if not allready done)
         if ($nic.internetAccess -and !$InternetTable.item($nic.lanid)) {
             $setInternet = Set-PBInternetAccess -datacenterId $newDC.dataCenterId -lanId $nic.lanId -internetAccess $true
+            # update InternetTable flag the Lan as Internet Connected
             $InternetTable += @{$nic.lanid = $true}
         }
     }
     Write-Host "    Connect CD-ROM to the server"
+    # Resore mounted ISO Images
     foreach ($cdrom in $Server.romdrives) {
         if ($cdrom.bootDevice) {
+            # use image as Bootdevice if it was bootdevice for the source server
             Write-Host "        Set Bootdevice to CD-Rom Image" $cdrom.imageId
             $storageconnect = Set-PBServer -serverId $NewServer.serverId -bootFromImageId $cdrom.imageId
         } else {
+            # or just connect the image
             Write-Host "        Connect data CD-ROM Image" $cdrom.imageId
-            $storageconnect = Mount-PBRomdrive -serverId $NewServer.serverId -imageId $cdrom.imageId 
+            $storageconnect = Mount-PBRomdrive -serverId $NewServer.serverId -imageId $cdrom.imageId -deviceNumber $cdrom.deviceNumber
         }
-
     }
     Write-Host "    Connect storages to the server"
+    # restore the Storage connections
     foreach ($storage in $server.connectedStorages) {
         if ($storage.bootDevice) {
             Write-Host "        Set Bootdevice to" $StorageTable.item($storage.storageId)
             $storageconnect = Set-PBServer -serverId $NewServer.serverId -bootFromStorageId $StorageTable.item($storage.storageId)
         } else {
             Write-Host "        Connect data storage" $StorageTable.item($storage.storageId)
-            $storageconnect = Connect-PBStorageToServer -serverId $NewServer.serverId -storageId $StorageTable.item($storage.storageId) -busType $storage.busType
+            $storageconnect = Connect-PBStorageToServer -serverId $NewServer.serverId -storageId $StorageTable.item($storage.storageId) -busType $storage.busType -deviceNumber $storage.deviceNumber
         }
     }
 }
