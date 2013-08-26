@@ -1,6 +1,6 @@
 ## DESCRIPTION:
 
-This is a collection of several, may be usefull, PowerShell scritps to use the ProfitBricks Cloud API. For detailed informations about this please take a look to the ProfitBricks Blog at [http://blog.profitbricks.de/](http://blog.profitbricks.de/)
+This is a collection of several, may be usefull, PowerShell scritps to use the ProfitBricks SOAP Cloud API. For detailed informations about this please take a look to the ProfitBricks Blog at [http://blog.profitbricks.de/](http://blog.profitbricks.de/)
 
 ## Requirements
 
@@ -14,8 +14,11 @@ ProfitBricks_API_Inventory_Demo.ps1 - Get asset informations about you ProfitBri
 
 ProfitBricks_API_Create[Simple]Datacenter.ps1 - provision new ressources in you ProfitBricks cloud. See also Blog post [Part 2 - Provisioning](http://blog.profitbricks.de/benutzung-der-profitbricks-api-mit-power-shell-teil-2-provisionieren-von-ressourcen/) - german only.
 
-ProfitBricks_API_CloneDatacenter.ps1 - Clone existing Datacenter using snapshots. Work in progess and may result in Blog Post part 3 ...
+ProfitBricks_API_CloneDatacenter.ps1 - Clone existing Datacenter using snapshots. Work in progess and will result soon in Blog Post part 3 ...
+
+ProfitBricks_API_StartStopDatacenter.ps1 - Power on or power off all servers in a datacenter using ProfitBricks API
  
+ProfitBricks_API_StopShutdownServers.ps1 - Power off all shutdown server inside your account. Script is designed to raun as planed task.
 
 ## Remarks
 
