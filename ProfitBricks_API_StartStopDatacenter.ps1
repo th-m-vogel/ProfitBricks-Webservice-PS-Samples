@@ -24,10 +24,8 @@ $pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
 ## connect the WDSL
 $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitbricksApiService -class ProfitbricksApiServiceClass
 
-
 ## use this line for interactive request of user credentials
 $creds = Get-Credential -Message "ProfitBricks Account"
-
 
 ## use the following thre code lines for
 # file stored credentials. (password as encrypted String)
@@ -46,7 +44,7 @@ $pb_api.Credentials = $creds
 # configuration section
 ################
 
-## set set id (UUID) for the datacenter to process
+## set id (UUID) for the datacenter to process
 ## the following simple query for a Datacenter name
 ## ist for demonstration purpose only
 $DCid = ($pb_api.getAllDataCenters() | Where-Object {$_.DatacenterName -eq "Master"}).dataCenterId
@@ -111,6 +109,7 @@ foreach ($server in $servers) {
     } else {
         # it is requested to power off all servers
         if ($server.provisioningState -ne "INACTIVE") {
+            # Display warning message if the requested Server is still running
             if ($server.virtualMachineState -eq "RUNNING") {
                 Write-Host "    # WARNING # OS is running!"
             }

@@ -113,7 +113,7 @@ foreach ($storage in $srcDC.storages) {
         $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
     }
 }
-## Ensure Snapshoting is starte before testing the snapshot status
+## Ensure Snapshoting is started before testing the snapshot status
 sleep 90
 
 ################
