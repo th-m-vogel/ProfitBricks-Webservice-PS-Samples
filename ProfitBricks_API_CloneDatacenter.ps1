@@ -124,7 +124,7 @@ foreach ($storage in $srcDC.storages) {
 ################
 
 $_snapshotToGo = $SnaphotStatus.Count 
-Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds. Snapshots not finished:"
+Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds. Snapshots not finished: "
 do {
     Sleep 60
     # update snapshotstatus for snapshots in state available
@@ -133,7 +133,7 @@ do {
         $SnaphotStatus.Remove($_snapshot.SnapshotId)
     }
     $_snapshotToGo = $SnaphotStatus.Count
-    Write-Host -NoNewline "$_snapshotToGo ,"
+    Write-Host -NoNewline "$_snapshotToGo, "
 } while ($_snapshotToGo)
 Write-Host "done!"
 
