@@ -24,7 +24,6 @@ import-module ProfitBricksSoapApi
 ## use this line for interactive request of user credentials
 $creds = Get-Credential -Message "ProfitBricks Account"
 
-
 ## use the following thre code lines for
 # file stored credentials. (password as encrypted String)
 # to create stored credentials you may use
@@ -82,6 +81,7 @@ $srcDC = Get-PBDatacenter $srcDCid.dataCenterId
 # The Hash SnapshotTable will associate StorageID in 
 # SourceDatacenter and SnapshotID
 $SnapshotTable = @{}
+$SnaphotStatus = @{}
 # Get List of existing Snapshots
 $StoredSnaphosts = $null
 $StoredSnaphosts = Get-PBSnapshots
@@ -95,6 +95,8 @@ foreach ($storage in $srcDC.storages) {
         Write-Host " ... Use existing Snapshot" $existing.description
         # Update SnapshotTable, associate existing Snapshot to StorageID
         $SnapshotTable += @{$storage.storageId = $existing.snapshotId }
+        # Update SnapshotStatus, set status to existing
+        $SnaphotStatus += @{$existing.snapshotId = "EXITING"}
     } else {
         # is the storage connected to a Server ?
         if ( $storage.serverIds ){
@@ -111,21 +113,29 @@ foreach ($storage in $srcDC.storages) {
         $Snapshot = New-PBSnapshot -storageId $storage.storageId -snapshotName $storage.storageId -description ("Auto created cloning snapshot from " + $storage.storageName + " at " + (Get-Date).ToString())
         # update SnapshotTable, associate existing Snapshot to StorageID
         $SnapshotTable += @{$storage.storageId = $Snapshot.snapshotId }
+        # Update SnapshotStatus, set status to requested
+        $SnaphotStatus += @{$Snapshot.snapshotId = "REQUESTED"}
+
     }
 }
-## Ensure Snapshoting is started before testing the snapshot status
-sleep 90
 
 ################
 # wait for for snapshots to finish
 ################
- 
-Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds "
+
+$_snapshotToGo = $SnaphotStatus.Count 
+Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds. Snapshots not finished:"
 do {
     Sleep 60
-    Write-Host -NoNewline "."
-} while (Get-PBSnapshots | Where-Object {($_.provisioningState -ne "AVAILABLE") -and ($_.SnapshotId -in $SnapshotTable.Values )})
-Write-Host " done!"
+    # update snapshotstatus for snapshots in state available
+    foreach ($_snapshot in (Get-PBSnapshots | Where-Object {($_.provisioningState -eq "AVAILABLE") -and ($_.SnapshotId -in $SnaphotStatus.Keys )})) {
+        # Remove the allready availible snaphot from statustable
+        $SnaphotStatus.Remove($_snapshot.SnapshotId)
+    }
+    $_snapshotToGo = $SnaphotStatus.Count
+    Write-Host -NoNewline "$_snapshotToGo ,"
+} while ($_snapshotToGo)
+Write-Host "done!"
 
 ################
 # create the new Datacenter
