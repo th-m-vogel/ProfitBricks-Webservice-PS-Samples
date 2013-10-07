@@ -222,6 +222,21 @@ foreach ($server in $srcDC.servers) {
 }
 
 ################
+# Create the Loadbalancers
+################
+# not implemented yet
+################
+#foreach ($loadbalancer in $srcDC.loadBalancers ) {
+#    $balancedserver = @()
+#    foreach ($server in $loadbalancer.balancedServers) {
+#        $balancedserver += $ServerTable.item($server.serverId) 
+#    }
+#    Write-Host "Create Loadbalancer" $loadbalancer.loadBalancerName "on Network" $loadbalancer.lanId "balancing" $balancedserver
+#    # CReate Loadbalancer and assign balanced Servers
+#    $NewLoadbalancer = New-PBLoadBalancer -dataCenterId $newDC.dataCenterId -loadBalancerName $loadbalancer.loadBalancerName -lanId $loadbalancer.lanId -serverIds $balancedserver
+#}
+
+################
 # Thats all, wait for provisioning finished
 ################
 CheckProvisioningState $newDC.dataCenterId 60
