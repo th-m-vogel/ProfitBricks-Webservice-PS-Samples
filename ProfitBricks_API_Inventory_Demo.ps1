@@ -131,7 +131,7 @@ foreach ($Datacenter in $DatacenterList){
             }
             # if DHCP is disabled for 1st NIC, note this to the Nic0_primary_IP property 
             if ( $Server.Nics[0].dhcpActive -eq $false ) {
-                $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value "dhcp_off"
+                $properties | Add-Member -Type NoteProperty -Name Nic0_primary_IP -Value "dhcp_off" -Force
             }  
             $properties | Add-Member -Type NoteProperty -Name Size -Value ""
             $properties | Add-Member -Type NoteProperty -Name Connected_To -Value ""
@@ -152,7 +152,9 @@ foreach ($Datacenter in $DatacenterList){
             $properties | Add-Member -Type NoteProperty -Name Name -Value $Storage.StorageName
             $properties | Add-Member -Type NoteProperty -Name Status -Value $Storage.provisioningState
             $properties | Add-Member -Type NoteProperty -Name Size -Value $Storage.size
-            $properties | Add-Member -Type NoteProperty -Name Connected_To -Value $Storage.serverIds[0]
+            if ( $Storage.serverIds.Count -gt 0 ) {
+                $properties | Add-Member -Type NoteProperty -Name Connected_To -Value $Storage.serverIds[0]
+            }
             $properties | Add-Member -Type NoteProperty -Name Created -Value $Storage.creationTime
             $properties | Add-Member -Type NoteProperty -Name LastModified -Value $Storage.lastModificationTime
         $DC_Items += $properties
