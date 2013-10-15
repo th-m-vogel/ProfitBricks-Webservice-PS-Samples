@@ -44,7 +44,7 @@ Open-PBApiService -Credentials $creds
 $srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq "Master"}
 $targetDCname = "My New Master Copy"
 $UseExistingSnapshots = $true
-$CleanuSnapshots = $false
+$CleanupSnapshots = $false
 
 ################
 # end configuration section
@@ -244,7 +244,7 @@ CheckProvisioningState $newDC.dataCenterId 60
 ################
 # Cleanup Snapshots
 ################
-if ($CleanuSnapshots) {
+if ($CleanupSnapshots) {
     Write-Host -NoNewline "Cleaning up Snapshots ... "
     $null = $SnapshotTable.Values | Remove-PBSnapshot 
     Write-Host "done!"
