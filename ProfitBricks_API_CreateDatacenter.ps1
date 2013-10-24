@@ -99,12 +99,14 @@ Write-host "Create the new Server ..."
 $ServerResponse = $pb_api.createServer($ServerRequest)
 
 ## Connect Storage to Server
-$ConnectRequest = New-Object ProfitbricksApiService.connectStorageRequest
+$ConnectRequest = New-Object ProfitbricksApiService.updateServerRequest
 $ConnectRequest.serverId = $ServerResponse.serverId
-$ConnectRequest.storageId = $StorageResponse.storageId
+$ConnectRequest.bootFromStorageId = $StorageResponse.storageId
+$ConnectRequest.osType = $image.osType
+$ConnectRequest.osTypeSpecified = $true
 ## invoke the connectStorageToServer methode
 Write-host "Connect Storage to Server ..."
-$ConnectResponse = $pb_api.connectStorageToServer($ConnectRequest)
+$ConnectResponse = $pb_api.updateServer($ConnectRequest)
 
 ## Create NIC
 $NicRequest = New-Object ProfitbricksApiService.createNicRequest
