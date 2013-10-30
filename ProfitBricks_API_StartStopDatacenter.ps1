@@ -74,11 +74,14 @@ function CheckProvisioningState {
         $_Status
     )
 
+    $_waittime = 0
     do {
         start-sleep -s $_Delay
+        $_waittime += $_Delay
         Write-Host -NoNewline "." 
         $_DC = $pb_api.getDataCenter($_DataCenterID)
     } while ($_DC.provisioningStateSpecified -and ($_DC.provisioningState -ne $_Status))
+    Write-Host -NoNewline " $_waittime Seconds for datacenterstate $_Status "
 
 }
 
@@ -102,7 +105,7 @@ foreach ($server in $servers) {
             CheckProvisioningState $DCid 5 INPROCESS
             # wait for request to finish
             CheckProvisioningState $DCid 5 AVAILABLE
-            Write-Host " done!"
+            Write-Host "done!"
         } else {
             Write-Host "    nothing to change" 
         }
@@ -119,7 +122,7 @@ foreach ($server in $servers) {
             CheckProvisioningState $DCid 5 INPROCESS
             # wait for request to finish
             CheckProvisioningState $DCid 5 AVAILABLE
-            Write-Host " done!"
+            Write-Host "done!"
         } else {
             Write-Host "    nothing to change" 
         }
