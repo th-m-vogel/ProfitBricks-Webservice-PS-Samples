@@ -58,11 +58,14 @@ function CheckProvisioningState {
         $_Status
     )
 
+    $_waittime = 0
     do {
         start-sleep -s $_Delay
+        $_waittime += $_Delay
         Write-Host -NoNewline "." 
         $_DC = $pb_api.getDataCenter($_DataCenterID)
     } while ($_DC.provisioningStateSpecified -and ($_DC.provisioningState -ne $_Status))
+    Write-Host -NoNewline " $_waittime Seconds for datacenterstate $_Status "
 
 }
 

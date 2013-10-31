@@ -65,11 +65,13 @@ function CheckProvisioningState {
     )
 
     write-host -NoNewline "Wait for Datacenter $_DataCenterID to change status to available, check every $_Delay seconds "
+    $_waittime = 0
     do {
         start-sleep -s $_Delay
+        $_waittime += $_Delay
         write-host -NoNewline "." 
     } while ( (Get-PBDatacenterState $_DataCenterID) -ne "AVAILABLE" )
-    Write-Host " done!"
+    Write-Host " done! in $_waittime Seconds"
 }
 
 ## request source DataCenter configuration
