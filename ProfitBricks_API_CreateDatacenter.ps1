@@ -43,17 +43,33 @@ $pb_api.Credentials = $pb_creds
 # try $pb_api | gm ...
 ################
 
-## create a function to wait for a ready to use datacenter
-##
+################
+## create a function to wait for datacenter state
+################
 function CheckProvisioningState { 
-    param ($_DataCenterID)
-    write-host -NoNewline "Wait for Datacenter to change status to available, check every 10 seconds "
+    param (
+        [Parameter( Mandatory=$true, Position=0 )]
+        [String]
+        $_DataCenterID
+        ,
+        [Parameter( Mandatory=$true, Position=1 )]
+        [Int]
+        $_Delay
+        ,
+        [Parameter( Mandatory=$true, Position=2 )]
+        [String]
+        $_Status
+    )
+
+    $_waittime = 0
     do {
-        write-host -NoNewline "." 
-        start-sleep -s 10
+        start-sleep -s $_Delay
+        $_waittime += $_Delay
+        Write-Host -NoNewline "." 
         $_DC = $pb_api.getDataCenter($_DataCenterID)
-    } while ($_DC.provisioningStateSpecified -and ($_DC.provisioningState -ne "AVAILABLE"))
-    Write-Host " done ..."
+    } while ($_DC.provisioningStateSpecified -and ($_DC.provisioningState -ne $_Status))
+    Write-Host -NoNewline " $_waittime Seconds for datacenterstate $_Status "
+
 }
 
 ################
@@ -122,7 +138,7 @@ Write-host "Connect the Lan to the Internet ..."
 $InternetResponse = $pb_api.SetInternetAccess($DatacenterResponse.dataCenterId,1,$true,$true)
 
 ## and  check provisioning state until Datacenter is provisioned
-CheckProvisioningState($DatacenterResponse.dataCenterId)
+CheckProvisioningState $DatacenterResponse.dataCenterId 10 AVAILABLE
 
 ## get the primary IP for the created NIC
 Write-host "Primary IP is: "$pb_api.getServer($ServerResponse.ServerID).nics[0].Ips[0]
