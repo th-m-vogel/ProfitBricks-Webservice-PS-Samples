@@ -18,6 +18,21 @@
 # PowerShell Module: https://github.com/th-m-vogel/ProfitBricks-PS-cmdlet
 ########################################################################
 
+################
+# configuration section
+################
+
+## set Name for the datacenter to process
+## ist for demonstration purpose only
+$TargetDC = "Master"
+## set to $true to power on all systems
+## set to $false to power off all systems
+$Powerstatus = $false
+
+################
+# end configuration section
+################
+
 ## Set the URI to the PB-API WSLD
 $pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
 
@@ -40,21 +55,9 @@ $creds = Get-Credential -Message "ProfitBricks Account"
 ## add the credentials for api access (common)
 $pb_api.Credentials = $creds
 
-################
-# configuration section
-################
-
-## set id (UUID) for the datacenter to process
-## the following simple query for a Datacenter name
+## Query the Datacenter ID
 ## ist for demonstration purpose only
-$DCid = ($pb_api.getAllDataCenters() | Where-Object {$_.DatacenterName -eq "Master"}).dataCenterId
-## set to $true to power on all systems
-## set to $false to power off all systems
-$Powerstatus = $false
-
-################
-# end configuration section
-################
+$DCid = ($pb_api.getAllDataCenters() | Where-Object {$_.DatacenterName -eq $TargetDC}).dataCenterId
 
 ################
 ## create a function to wait for datacenter state

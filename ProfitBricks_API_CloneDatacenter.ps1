@@ -18,6 +18,10 @@
 # PowerShell Module: https://github.com/th-m-vogel/ProfitBricks-PS-cmdlet
 ########################################################################
 
+
+$srcDCName = "Master"
+$targetDCname = "My New Master Copy"
+
 ## Import the PBAPI PowerShell Module
 import-module ProfitBricksSoapApi
 
@@ -41,8 +45,7 @@ Open-PBApiService -Credentials $creds
 # configuration section
 ################
 
-$srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq "Master"}
-$targetDCname = "My New Master Copy"
+$srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq $srcDCName}
 $UseExistingSnapshots = $true
 $CleanupSnapshots = $false
 
