@@ -93,6 +93,11 @@ function CheckProvisioningState {
 ################
 $DC = $pb_api.getDataCenter($DCid)
 
+# continue only if the datacenter in AVAILABLE
+Write-Host -NoNewline "Check Datacenter status "
+CheckProvisioningState $DCid 5 AVAILABLE
+Write-Host "... start to set Powerstat to $Powerstatus "
+
 ################
 # loop for all servers in the requested DC
 ################
@@ -104,8 +109,6 @@ foreach ($server in $servers) {
         if ($server.virtualMachineState -ne "RUNNING") {
             Write-Host -NoNewline "    request Power ON "
             $response = $pb_api.startServer($server.serverId)
-            # wait for request execution
-            CheckProvisioningState $DCid 5 INPROCESS
             # wait for request to finish
             CheckProvisioningState $DCid 5 AVAILABLE
             Write-Host "done!"
@@ -121,8 +124,6 @@ foreach ($server in $servers) {
             }
             Write-Host -NoNewline "    request Power OFF "
             $response = $pb_api.stopServer($server.serverId)
-            # wait for request execution
-            CheckProvisioningState $DCid 5 INPROCESS
             # wait for request to finish
             CheckProvisioningState $DCid 5 AVAILABLE
             Write-Host "done!"

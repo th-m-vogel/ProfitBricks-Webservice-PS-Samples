@@ -77,14 +77,17 @@ Write-Host "Found Datacenter" $DC.dataCenterName
     ################
     # loop for all servers in DC
     ################
+    # continue only if the datacenter in AVAILABLE
+    Write-Host -NoNewline "Check Datacenter status "
+    CheckProvisioningState $DC.dataCenterId 5 AVAILABLE
+    Write-Host "... start to Power Off Servers"
+
     foreach ($server in ($pb_api.getDataCenter($DC.dataCenterId)).servers) {
         Write-Host "    Found Server" $server.serverName "in state" $server.virtualMachineState "and Privisioningstate is" $server.provisioningState
         if ($server.virtualMachineState -eq "SHUTOFF" -and $server.provisioningState -eq "AVAILABLE") {
             Write-Host -NoNewline "        request Power OFF "
             Write-Eventlog  -Logname 'Application' -Source 'Application' -EventID 1000 -EntryType Information -Message ("Shutt off Server " + $server.serverName + " in Datacenter " + $DC.dataCenterName)
             $response = $pb_api.stopServer($server.serverId)
-            # wait for request execution
-            CheckProvisioningState $DC.dataCenterId 5 INPROCESS
             # wait for request to finish
             CheckProvisioningState $DC.dataCenterId 5 AVAILABLE
             Write-Host " done!"
