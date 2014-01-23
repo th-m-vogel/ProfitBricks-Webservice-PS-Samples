@@ -19,7 +19,7 @@
 ########################################################################
 
 
-$srcDCName = "Master mit LB"
+$srcDCName = "Master DC"
 $targetDCname = "My New Master Copy"
 
 ## Import the PBAPI PowerShell Module
@@ -46,7 +46,7 @@ Open-PBApiService -Credentials $creds
 ################
 
 $srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq $srcDCName}
-$UseExistingSnapshots = $true
+$UseExistingSnapshots = $false
 $CleanupSnapshots = $false
 
 ################
@@ -95,8 +95,8 @@ foreach ($storage in $srcDC.storages) {
     Write-Host -NoNewline "Evaluate" $storage.storageName 
     # Check if there is an existing snapshot we can use
     if ( $UseExistingSnapshots -and ($existing = $StoredSnaphosts | Where-Object {$_.snapshotname -eq $storage.storageId -and $_.region -eq $srcDC.region}) ) {
-        ## select newes snapshot - unsafe for now, now real timestamop in storageobject
-        $existing = ($existing | Sort-Object -Property description -Descending)[0]
+        ## select newest snapshot
+        $existing = ($existing | Sort-Object -Property creationTimestamp -Descending)[0]
         Write-Host " ... Use existing Snapshot" $existing.description
         # Update SnapshotTable, associate existing Snapshot to StorageID
         $SnapshotTable += @{$storage.storageId = $existing.snapshotId }
@@ -129,9 +129,11 @@ foreach ($storage in $srcDC.storages) {
 ################
 
 $_snapshotToGo = $SnaphotStatus.Count 
+$_snapTime = 0
 Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds. Snapshots not finished: "
 do {
     Sleep 60
+    $_snapTime += 60
     # update snapshotstatus for snapshots in state available
     foreach ($_snapshot in (Get-PBSnapshots | Where-Object {($_.provisioningState -eq "AVAILABLE") -and ($_.SnapshotId -in $SnaphotStatus.Keys )})) {
         # Remove the allready availible snaphot from statustable
@@ -140,7 +142,7 @@ do {
     $_snapshotToGo = $SnaphotStatus.Count
     Write-Host -NoNewline "$_snapshotToGo, "
 } while ($_snapshotToGo)
-Write-Host "done!"
+Write-Host " done! in $_snapTime Seconds"
 
 ################
 # create the new Datacenter
