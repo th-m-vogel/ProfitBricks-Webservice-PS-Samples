@@ -19,7 +19,7 @@
 ########################################################################
 
 ## Set the URI to the PB-API WSLD
-$pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
+$pb_wsdl = "https://api.profitbricks.com/1.3/wsdl"
 
 ## connect the WDSL
 $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitbricksApiService -class ProfitbricksApiServiceClass

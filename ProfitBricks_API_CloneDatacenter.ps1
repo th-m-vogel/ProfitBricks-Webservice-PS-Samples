@@ -18,9 +18,19 @@
 # PowerShell Module: https://github.com/th-m-vogel/ProfitBricks-PS-cmdlet
 ########################################################################
 
+################
+# configuration section
+################
 
-$srcDCName = "Master DC"
+$srcDCName = "Master"
 $targetDCname = "My New Master Copy"
+
+$UseExistingSnapshots = $false
+$CleanupSnapshots = $false
+
+################
+# end configuration section
+################
 
 ## Import the PBAPI PowerShell Module
 import-module ProfitBricksSoapApi
@@ -41,17 +51,8 @@ $creds = Get-Credential -Message "ProfitBricks Account"
 ## initialise the PB-API Service using the given Credentials
 Open-PBApiService -Credentials $creds
 
-################
-# configuration section
-################
-
+## evaluate src datacenterID from API
 $srcDCid = Get-PBDatacenterIdentifiers | Where-Object {$_.DatacenterName -eq $srcDCName}
-$UseExistingSnapshots = $false
-$CleanupSnapshots = $false
-
-################
-# end configuration section
-################
 
 ################
 ## create a function to wait for a ready to use datacenter

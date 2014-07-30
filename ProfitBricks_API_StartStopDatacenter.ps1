@@ -24,7 +24,7 @@
 
 ## set Name for the datacenter to process
 ## ist for demonstration purpose only
-$TargetDC = "Master"
+$TargetDC = "keepalive plus HAproxy"
 ## set to $true to power on all systems
 ## set to $false to power off all systems
 $Powerstatus = $false
