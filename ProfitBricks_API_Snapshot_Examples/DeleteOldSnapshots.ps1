@@ -56,6 +56,6 @@ $SnapshotsToDelete = $AllSnapshots | Where-Object {$_.snapshotName -like $Snapsh
 
 # loop throught all snapshots to delete
 foreach ($snapshot in $SnapshotsToDelete) {
-    $deleteResponse = $pb_api.deleteSnapshot($snapshots.snapshotId)
+    $deleteResponse = $pb_api.deleteSnapshot($snapshot.snapshotId)
     Write-Host "Request" $deleteResponse.requestId "Deleted Snapshot" $snapshot.snapshotName "with ID" $snapshot.snapshotId
 }
