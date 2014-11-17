@@ -22,6 +22,8 @@
 # before the next snapshot request is started.
 #####
 
+$ErrorActionPreference="Stop"
+
 # Credentials
 $_password = Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString
 $_user = "thomas.vogel@profitbricks.com"
@@ -38,11 +40,11 @@ $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitBricksApiService -c
 $pb_api.Url = $PBEndpoint
 $pb_api.PreAuthenticate = $true
 $pb_api.Credentials = $pb_creds
-$pb_api.Timeout = 500000 # http request timeout in milliseconds
+$pb_api.Timeout = 120000 # http request timeout in milliseconds
 # $pb_api is the Webserice class with all methodes and properties defined in the WSDL
 
 # Datacenter to use
-$DatacenterId = "400784cf-33bb-4f17-90de-928de1ff03a1"
+$DatacenterId = "dd8b72b8-3ceb-424f-a04d-d7256fdd4205"
 
 # get Datacenter structure
 $Datacenter = $pb_api.getDataCenter($DatacenterId)
@@ -55,9 +57,17 @@ foreach ($storage in $Datacenter.storages) {
     $snapshotRequest.snapshotName = "Backup." + $storage.storageName +"." + $storage.storageId
     $snapshotRequest.description = "Auto created backup snapshot from " + $storage.storageName + " at " + (Get-Date).ToString()
     # execute snapshot
+    Write-Host "Requesting Snapshot from Storage" $storage.storageName "using ID" $storage.storageId "at" $([System.DateTime]::Now)
     $snapshotResponse = New-Object ProfitBricksApiService.createSnapshotResponse 
-    $snapshotResponse = $pb_api.createSnapshot($snapshotRequest)
-    Write-Host "Requested Snapshot from Storage" $storage.storageName "using ID" $storage.storageId "in Snapshot" $snapshotResponse.snapshotId
+    try {
+        $snapshotResponse = $pb_api.createSnapshot($snapshotRequest) 
+    }
+    catch {
+        Write-Host "### ERROR ### Requesting Snapshot from Storage" $storage.storageName "using ID" $storage.storageId "failed at" $([System.DateTime]::Now)
+        Write-Host "              Message: $($_.Exception.Message)"
+        Write-Host "              Item failed: $($_.Exception.ItemName)"
+    }
+    Write-Host "Requested Snapshot from Storage" $storage.storageName "using ID" $storage.storageId "in Snapshot" $snapshotResponse.snapshotId "at" $([System.DateTime]::Now)
     Write-Host -NoNewline "Wait for Snapshots to be available, check every 60 seconds "
     $_snapTime = 0
     do {
