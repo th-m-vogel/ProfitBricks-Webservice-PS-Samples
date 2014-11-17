@@ -40,7 +40,7 @@ $pb_api.Timeout = 500000 # http request timeout in milliseconds
 # $pb_api is the Webserice class with all methodes and properties defined in the WSDL
 
 # Datacenter to use
-$DatacenterId = "523a7fd8-9f7d-4919-9995-dae815c12b36"
+$DatacenterId = "400784cf-33bb-4f17-90de-928de1ff03a1"
 
 # get Datacenter structure
 $Datacenter = $pb_api.getDataCenter($DatacenterId)
