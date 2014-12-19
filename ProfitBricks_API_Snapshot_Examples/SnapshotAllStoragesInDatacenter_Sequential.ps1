@@ -22,6 +22,10 @@
 # before the next snapshot request is started.
 #####
 
+# Datacenter to use
+$DatacenterId = "c894dfac-3524-49fd-8691-56f112c2c5de"
+
+
 $ErrorActionPreference="Stop"
 
 # Credentials
@@ -42,9 +46,6 @@ $pb_api.PreAuthenticate = $true
 $pb_api.Credentials = $pb_creds
 $pb_api.Timeout = 120000 # http request timeout in milliseconds
 # $pb_api is the Webserice class with all methodes and properties defined in the WSDL
-
-# Datacenter to use
-$DatacenterId = "dd8b72b8-3ceb-424f-a04d-d7256fdd4205"
 
 # get Datacenter structure
 $Datacenter = $pb_api.getDataCenter($DatacenterId)
