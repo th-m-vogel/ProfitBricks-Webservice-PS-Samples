@@ -22,10 +22,10 @@
 # configuration section
 ################
 
-$srcDCName = "Master"
-$targetDCname = "My New Master Copy"
+$srcDCName = "Sophos UTM"
+$targetDCname = "$srcDCName - Clone"
 
-$UseExistingSnapshots = $false
+$UseExistingSnapshots = $true
 $CleanupSnapshots = $false
 
 ################
@@ -67,7 +67,7 @@ function CheckProvisioningState {
         [Int]
         $_Delay
     )
-
+    
     write-host -NoNewline "Wait for Datacenter $_DataCenterID to change status to available, check every $_Delay seconds "
     $_waittime = 0
     do {
@@ -95,7 +95,7 @@ $StoredSnaphosts = Get-PBSnapshots
 foreach ($storage in $srcDC.storages) {
     Write-Host -NoNewline "Evaluate" $storage.storageName 
     # Check if there is an existing snapshot we can use
-    if ( $UseExistingSnapshots -and ($existing = $StoredSnaphosts | Where-Object {$_.snapshotname -eq $storage.storageId -and $_.region -eq $srcDC.region}) ) {
+    if ( $UseExistingSnapshots -and ($existing = $StoredSnaphosts | Where-Object {$_.snapshotname -eq $storage.storageId -and $_.Location -eq $srcDC.Location}) ) {
         ## select newest snapshot
         $existing = ($existing | Sort-Object -Property creationTimestamp -Descending)[0]
         Write-Host " ... Use existing Snapshot" $existing.description
@@ -150,7 +150,7 @@ Write-Host " done! in $_snapTime Seconds"
 ################
 
 Write-Host "Create the new Datacenter $targetDCname"
-$newDC = New-PBDatacenter -dataCenterName $targetDCname -Region $srcDC.region
+$newDC = New-PBDatacenter -dataCenterName $targetDCname -Location $srcDC.Location
 
 ################
 # create the Storages

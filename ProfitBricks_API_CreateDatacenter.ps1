@@ -17,7 +17,7 @@
 ########################################################################
 
 ## Set the URI to the PB-API WSLD
-$pb_wsdl = "https://api.profitbricks.com/1.2/wsdl"
+$pb_wsdl = "https://api.profitbricks.com/1.3/wsdl"
 
 ## connect the WDSL
 $pb_api = New-WebServiceProxy -Uri $pb_wsdl -namespace ProfitbricksApiService -class ProfitbricksApiServiceClass
@@ -76,13 +76,13 @@ function CheckProvisioningState {
 # now we are ready to consume the PB-API
 ################
 
-## Specify Region to use
-$my_region = "EUROPE"
+## Specify Location to use
+$my_location = "defra"
 
 ## get list of all available Images
 $pb_images = $pb_api.getAllImages()
 ## Pick the Windows Server 2012 imag
-$image = $pb_images | Where-Object {($_.ImageName -like "windows-2012-server-*") -and ($_.region -eq $my_region) -and ($_.imageType -eq "HDD")}
+$image = $pb_images | Where-Object {($_.ImageName -like "Debian-7*") -and ($_.Location -eq $my_location) -and ($_.imageType -eq "HDD")}
 write-host "Will use the followinmg Image to create a new Server:" $image.imageName
 
 ################
@@ -91,12 +91,17 @@ write-host "Will use the followinmg Image to create a new Server:" $image.imageN
 
 ## create a new and empty Datacenter
 Write-host "Create the new Datacenter ..."
-$DatacenterResponse = $pb_api.createDataCenter("My New API created Datacenter",$my_region,$true)
+## create a DataCcenterRequest
+$DatacenterRequest = New-Object ProfitbricksApiService.createDataCenterRequest
+$DatacenterRequest.dataCenterName = "My New API created Datacenter"
+$DatacenterRequest.location = $my_location
+## invoke the createDatacenter methode
+$DatacenterResponse = $pb_api.createDataCenter($DatacenterRequest)
 
 ## create a StorageRequest
 $StorageRequest = New-Object ProfitbricksApiService.createStorageRequest
 $StorageRequest.dataCenterId = $DatacenterResponse.dataCenterId
-$StorageRequest.storageName = "WindowsServer Drive C"
+$StorageRequest.storageName = "DebianServer Drive VDA"
 $StorageRequest.size = 40
 $StorageRequest.mountImageId = $image.imageId
 $StorageRequest.profitBricksImagePassword = "asdfghjk"
@@ -109,7 +114,7 @@ $ServerRequest = New-Object ProfitbricksApiService.createServerRequest
 $ServerRequest.dataCenterId = $DatacenterResponse.dataCenterId
 $ServerRequest.cores = 2
 $ServerRequest.ram = 4096
-$ServerRequest.serverName = "Windows2012 Server"
+$ServerRequest.serverName = "Debian 7 Server"
 ## invoke the createServer methode
 Write-host "Create the new Server ..."
 $ServerResponse = $pb_api.createServer($ServerRequest)
