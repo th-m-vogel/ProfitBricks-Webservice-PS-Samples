@@ -26,8 +26,10 @@
 
 ## request credentials
 $creds = Get-Credential -Message "Enter credentials"
+# $PW_File = "$env:HOMEPATH\PB_API.pwd"
+$PW_File = "$env:HOMEPATH\Documents\GitHub\ProfitBricks-Webservice-PS-Samples-private\Versatel-Reseller-Tools\VersatelReseller.pwd"
 
 ## save credentials.password as encrypted secure string
-$creds.Password | ConvertFrom-SecureString | Set-Content "$env:HOMEPATH\PB_API.pwd"
+$creds.Password | ConvertFrom-SecureString | Set-Content $PW_File
 
 ## done ...

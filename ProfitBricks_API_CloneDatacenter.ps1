@@ -22,7 +22,7 @@
 # configuration section
 ################
 
-$srcDCName = "Sophos UTM"
+$srcDCName = "CloudConnect Storage"
 $targetDCname = "$srcDCName - Clone"
 
 $UseExistingSnapshots = $true
@@ -33,7 +33,7 @@ $CleanupSnapshots = $false
 ################
 
 ## Import the PBAPI PowerShell Module
-import-module ProfitBricksSoapApi
+import-module $env:HOMEPATH\Documents\WindowsPowerShell\Modules\ProfitBricksSoap\ProfitBricksSoapApi.psd1
 
 ## use this line for interactive request of user credentials
 $creds = Get-Credential -Message "ProfitBricks Account"
@@ -160,20 +160,17 @@ $newDC = New-PBDatacenter -dataCenterName $targetDCname -Location $srcDC.Locatio
 # in TargetDatacenter
 $StorageTable = @{}
 foreach ($Storage in $srcDC.storages) {
-    Write-Host -NoNewline "Create new Storage" $storage.storageName "size" $storage.size "GB ..."
+    Write-Host "Create new Storage" $storage.storageName "size" $storage.size "GB from Snapshot $($SnapshotTable.Item($storage.storageId)) ..."
     # create the new Storage using properties from existing storage
-    $NewStorage = New-PBStorage -dataCenterId $newDC.dataCenterId -size $storage.size -storageName $storage.storageName 
-    Write-Host " and apply snapshot from source storage" $storage.storageId
-    # Restore Snapshot. Use SnapshotTable to identify snapshot to use
-    $RestoreSnapshot = Restore-PBSnapshot -storageId $NewStorage.StorageId -snapshotId $SnapshotTable.Item($storage.storageId)
+    $NewStorage = New-PBStorage -dataCenterId $newDC.dataCenterId -size $storage.size -storageName $storage.storageName -mountImageId $SnapshotTable.Item($storage.storageId)
     # update SnapshotTable, associate existing StorageID to new StorageID
     $StorageTable += @{$storage.storageId = $NewStorage.storageId}
+    ################
+    # wait for provisioning finished
+    ################
+    CheckProvisioningState $newDC.dataCenterId 60
 }
 
-################
-# wait for provisioning finished
-################
-CheckProvisioningState $newDC.dataCenterId 60
 
 ################
 # Create the Servers
@@ -227,6 +224,10 @@ foreach ($server in $srcDC.servers) {
             $storageconnect = Connect-PBStorageToServer -serverId $NewServer.serverId -storageId $StorageTable.item($storage.storageId) -busType $storage.busType -deviceNumber $storage.deviceNumber
         }
     }
+    ################
+    # wait for provisioning finished
+    ################
+    CheckProvisioningState $newDC.dataCenterId 60
 }
 
 ################
