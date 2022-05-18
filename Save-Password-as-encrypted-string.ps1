@@ -10,7 +10,7 @@
 # OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 # EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ########################################################################
-# Stor credentials.password to encrypted string
+# Store credentials.password to encrypted string
 # only the same user is able to use the encrypted string
 # if the script has to run on a differemt account, 
 # ConverFrom-SecureString and ConvertTo-SecureStrimg
@@ -21,13 +21,13 @@
 #
 # This example does not include any error or exeption handling
 ########################################################################
-# (c) ProfitBricks, 2013, Autor: Thomas Vogel
+# (c) ProfitBricks/IONOS, 2013...2018, Autor: Thomas Vogel
 ########################################################################
 
 ## request credentials
 $creds = Get-Credential -Message "Enter credentials"
-# $PW_File = "$env:HOMEPATH\PB_API.pwd"
-$PW_File = "$env:HOMEPATH\Documents\GitHub\ProfitBricks-Webservice-PS-Samples-private\Versatel-Reseller-Tools\VersatelReseller.pwd"
+## set password file
+$PW_File = "$env:HOMEPATH\PB_API.pwd"
 
 ## save credentials.password as encrypted secure string
 $creds.Password | ConvertFrom-SecureString | Set-Content $PW_File

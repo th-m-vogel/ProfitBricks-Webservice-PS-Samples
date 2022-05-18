@@ -1,0 +1,115 @@
+﻿########################################################################
+# Copyright 2018 Thomas Vogel
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#########################################################################
+# Code Repository: https://github.com/th-m-vogel/ProfitBricks-Webservice-PS-Samples
+#########################################################################
+
+#####
+# Runs as planed Task to delete old snapshots on schedule
+#####
+
+### To set Script in test Mode - Only informatin output, no action taken for snapshots
+$TestMode = $true
+### disable TestMode - no output, matching snapshots are deleted.
+# $TestMode = $false
+
+### Set Retention Times
+# retention for monthly snapshots in Month
+$MonthlyRetention = 4
+# retention for weekly snapshots in Weeks
+$WeeklyRetention = 4
+
+### use this line for interactive request of user credentials
+# $Credential = Get-Credential -Message "ProfitBricks Account"
+# $_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
+# $_user = $Credential.UserName
+
+### alternative get encrypted password from a file
+$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString) ))
+# or use a plain test password in the script
+#$_password = "DasIstGeheim!"
+$_user = "thomas.vogel@profitbricks.com"
+
+### Prepare for basic auth header
+$AuthStringBase64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("$($_user):$($_password)")) 
+
+### Webservice URI
+$BaseUri = "https://api.profitbricks.com/cloudapi/v4" 
+# $BaseUri = "https://api.profitbricks.com/rest" 
+
+### Build request Headers
+$Headers = New-Object "System.Collections.Generic.Dictionary[[String],[String]]"
+$Headers.Add("Content-Type","application/json")
+$Headers.Add("AUTHORIZATION", "Basic $AuthStringBase64");
+
+### Define your own UserAgent (if you want)
+$UserAgent = "PowerShell REST Client for Snapshot Management"
+
+##########
+# end of config / init section
+##########
+
+### timestamp for deletion handling
+$Now = Get-Date
+$MonthlyDeleteTimestamp = $now.AddMonths( -1*$MonthlyRetention )
+$WeeklyDeleteTimestamp = $now.AddDays( -7*$WeeklyRetention )
+if ($TestMode) {
+    Write-Host "Will delete monthly snapshots created before" $MonthlyDeleteTimestamp
+    Write-Host "Will delete weekly snapshots created before" $WeeklyDeleteTimestamp
+}
+
+### get the Snapshots from the API
+$Snapshots = Invoke-RestMethod -Uri "$BaseUri/snapshots?depth=2" -Headers $Headers -Method Get -UserAgent $UserAgent
+
+
+### Evaluate esch snapshot for deletion
+foreach ( $Snapshot in $Snapshots.items ) {
+
+    #Is it a monthly snapshot?
+    #if ($Snapshot.properties.name -like "- Monthly CW") {
+    switch -Regex ($Snapshot.properties.name) {
+        ".*\ -\ Monthly\ CW.*" {
+            if ($TestMode) { Write-Host "Found monthly Snapshot :" $Snapshot.properties.name ",created at" $Snapshot.metadata.createdDate }
+            # is the spahshot older  than retention period?
+            if ([datetime]::Parse($Snapshot.metadata.createdDate) -lt $MonthlyDeleteTimestamp ) {
+                if ($TestMode) { Write-Host "... will delete this snapshot" }
+                else {
+                    # execute deletion
+                    $DeleteResponse = Invoke-RestMethod -Uri $Snapshot.href -Headers $Headers -Method Delete -UserAgent $UserAgent
+                    sleep -Seconds 60
+                }
+            break
+            }
+        }
+        ".*\ -\ Weekly\ CW.*" {
+            if ($TestMode) { Write-Host "Found weekly Snapshot  :" $Snapshot.properties.name ",created at" $Snapshot.metadata.createdDate }
+            # is the spahshot older  than retention period?
+            if ([datetime]::Parse($Snapshot.metadata.createdDate) -lt $WeeklyDeleteTimestamp ) {
+                if ($TestMode) { Write-Host "... will delete this snapshot" }
+                else {
+                    # execute deletion
+                    $DeleteResponse = Invoke-RestMethod -Uri $Snapshot.href -Headers $Headers -Method Delete -UserAgent $UserAgent
+                    sleep -Seconds 60
+                }
+            break
+            }
+        }
+        default {
+            if ($TestMode) { Write-Host "Unidentified Snapshot  :" $Snapshot.properties.name "does not match any criteria, no action taken for this Snapshot" }
+            break
+        }
+    }    
+}
+
