@@ -27,7 +27,7 @@
 ## request credentials
 $creds = Get-Credential -Message "Enter credentials"
 ## set password file
-$PW_File = "$env:HOMEPATH\TV_Subcontract.pwd"
+$PW_File = "$env:HOMEPATH\Documents\VersatelTools\VersatelReseller.pwd"
 
 ## save credentials.password as encrypted secure string
 $creds.Password | ConvertFrom-SecureString | Set-Content $PW_File
