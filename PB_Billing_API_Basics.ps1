@@ -23,13 +23,13 @@
 $BaseUri = "https://api.ionos.com/billing" 
 
 ### use this lines for interactive request of user credentials
-#$Credential = Get-Credential -Message "IONOS Professional Cloud Account"
-#$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
-#$_user = $Credential.UserName
+$Credential = Get-Credential -Message "IONOS Professional Cloud Account"
+$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
+$_user = $Credential.UserName
 
 ### credentials from an encrypted password file (see also Save-Password-as-encrypted-string.ps1)
-$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString) ))
-$_user = "thomas.vogel@profitbricks.com"
+# $_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString) ))
+# $_user = "thomas.vogel@profitbricks.com"
 
 ### set Username and Password in plain text
 # $_user = "thomas.vogel@profitbricks.com"
@@ -47,7 +47,7 @@ $Headers.Add("AUTHORIZATION", "Basic $AuthStringBase64");
 
 ### Some additional variables for the script
 # Define your own UserAgent (if you want)
-$UserAgent = "Thomas cheap PowerShell Client for IONOS Billing API v0.1"
+$UserAgent = "Thomas cheap PowerShell Client for IONOS Billing API"
 
 ######### Work with the API
 
@@ -83,16 +83,6 @@ foreach ($company in $Companies ) {
         Write-Host "... Nothing found"
     }
 
-    ### Show trafic for this month
-    $Traffic = $null
-    Write-Host "#### Found traffic for actual Month:"
-    $Traffic = Invoke-RestMethod -Uri "$BaseUri/$contract/traffic?mac=true" -Headers $Headers -Method Get -UserAgent $UserAgent 
-    if ($Traffic.traffic.Count -gt 1) {
-        Write-Host $Traffic.traffic
-    } else {
-        Write-Host "... Nothing found"
-    }
-    Write-Host ""
     
     ### Show available Invoices
     $Invoices = $null
@@ -109,7 +99,7 @@ foreach ($company in $Companies ) {
     ### Retrive the last availabe Invoice
     if ($Invoices.invoices.count -gt 0) {
         Write-Host "#### Last invoice with ID" $Invoices.invoices[$Invoices.invoices.count-2].id "from" $Invoices.invoices[$Invoices.invoices.count-2].date "at" $BaseUri/$contract/invoices/$($invoices.invoices[$Invoices.invoices.count-2].id)
-        $Invoice = Invoke-RestMethod -Uri "$BaseUri/$contract/invoices/$($invoices.invoices[$Invoices.invoices.count-2].id)" -Headers $Headers -Method Get -UserAgent $UserAgent
+        $Invoice = Invoke-RestMethod -Uri "$BaseUri/$contract/invoices/$($invoices.invoices[$Invoices.invoices.count-1].id)" -Headers $Headers -Method Get -UserAgent $UserAgent
         $Invoice.datacenters | Format-Table
     } 
 }
