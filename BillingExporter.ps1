@@ -29,10 +29,10 @@ $ExportPath = "$env:HOMEPATH\Documents\_Billing_Export"
 # different metodes for credential handling
 #
 ### credentials from an encrypted password file (see also Save-Password-as-encrypted-string.ps1)
-# $_pwfile = "$env:HOMEPATH\PB_API.pwd"
-# $_user = "thomas.vogel@profitbricks.com"
+$_pwfile = "$env:HOMEPATH\PB_API.pwd"
+$_user = "thomas.vogel@profitbricks.com"
 ### get encrypted password
-# $_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content $_pwfile | ConvertTo-SecureString) ))
+$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content $_pwfile | ConvertTo-SecureString) ))
 
 ### how to create an password file uning SecureString
 # $_creds = Get-Credential -Message "Enter credentials"
@@ -43,9 +43,9 @@ $ExportPath = "$env:HOMEPATH\Documents\_Billing_Export"
 # $_password = "cleartext_password_here"
 
 ### use this lines for interactive request of user credentials
-$Credential = Get-Credential -Message "IONOS IaaS Account"
-$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
-$_user = $Credential.UserName
+# $Credential = Get-Credential -Message "IONOS IaaS Account"
+# $_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
+# $_user = $Credential.UserName
 
 
 ######### Initialisation section

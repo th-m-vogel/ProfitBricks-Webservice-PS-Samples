@@ -23,13 +23,13 @@
 $BaseUri = "https://api.ionos.com/billing" 
 
 ### use this lines for interactive request of user credentials
-$Credential = Get-Credential -Message "IONOS Professional Cloud Account"
-$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
-$_user = $Credential.UserName
+# $Credential = Get-Credential -Message "IONOS Professional Cloud Account"
+# $_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( ($Credential.Password) ))
+# $_user = $Credential.UserName
 
 ### credentials from an encrypted password file (see also Save-Password-as-encrypted-string.ps1)
-# $_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString) ))
-# $_user = "thomas.vogel@profitbricks.com"
+$_password = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR( (Get-Content "$env:HOMEPATH\PB_API.pwd" | ConvertTo-SecureString) ))
+$_user = "thomas.vogel@profitbricks.com"
 
 ### set Username and Password in plain text
 # $_user = "thomas.vogel@profitbricks.com"
